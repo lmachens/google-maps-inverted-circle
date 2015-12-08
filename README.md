@@ -20,7 +20,7 @@ It has following methods and events
 
 | Events  | Arguments  | Description
 | -------- | ------------ | ----------- 
-| center_changed  | None  | This event is fired when the circle's center is changed.
+| position_changed  | None  | This event is fired when the circle's center is changed.
 | radius_changed  | None  | This event is fired when the circle's radius is changed.
 | visible_changed  | None  | This event is fired when the circle's visible is changed.
 
