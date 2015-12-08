@@ -1,5 +1,5 @@
 /* 
- * https://github.com/lmachens/google-map-inverted-circle
+ * https://github.com/lmachens/google-maps-inverted-circle
  * Copyright (c) 2013 Miah Raihan Mahmud Arman
  * Copyright (c) 2015 Leon Machens
  * Released under the MIT licence: http://opensource.org/licenses/mit-license
