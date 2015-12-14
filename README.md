@@ -1,6 +1,14 @@
-### How to draw Inverted Circle on Google Map?
+# lmachens:google-maps-inverted-circle
 
 In Google Map Javascript API the regular Circle has an option to fill the inside of circle with a color, but there is no option to fill the outside of the circle. After lots of searching in Google and reading Google Map Javascript API, when I didn't find any solution, then I started to build my own library to draw an InvertedCircle. I used google.maps.MVCObject class to give same functionality as regular Circle of  Google Map Javascript API
+
+## Installation
+
+```
+    meteor add lmachens:google-maps-inverted-circle
+```
+
+## Description
 
 It has following methods and events
 
@@ -29,3 +37,4 @@ Here is the screenshots of InvertedCircle
 ![Inverted Circle on Google Map](http://4.bp.blogspot.com/--mczRhxY_NM/UR_XNVE3_hI/AAAAAAAAAH4/bYOZ7zNZm4c/s1600/inverted-circle.png)
 
 For example check demo folder
+

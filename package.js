@@ -2,7 +2,7 @@ Package.describe({
   name: 'lmachens:google-maps-inverted-circle',
   version: '0.0.1',
   // Brief, one-line summary of the package.
-  summary: '',
+  summary: 'Draws a inverted circle',
   // URL to the Git repository containing the source code for this package.
   git: 'https://github.com/lmachens/google-maps-inverted-circle',
   // By default, Meteor will default to using README.md for documentation.
