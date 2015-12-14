@@ -10,10 +10,12 @@ In Google Map Javascript API the regular Circle has an option to fill the inside
 
 ## Description
 
+You have to call InitInvertedCircle to use the InvertedCircle.
+
 It has following methods and events
 
 | Methods  | Return Value | Description
-| -------- | ------------ | ----------- 
+| -------- | ------------ | -----------
 | getBounds() | LatLngBounds | Gets the LatLngBounds of this Circle.
 | getCenter() | LatLng | Returns the center of this circle.
 | getEditable() | boolean | Returns whether this circle can be edited by the user.
@@ -27,7 +29,7 @@ It has following methods and events
 | setVisible(visible:boolean) | None | Hides this circle if set to false.
 
 | Events  | Arguments  | Description
-| -------- | ------------ | ----------- 
+| -------- | ------------ | -----------
 | position_changed  | None  | This event is fired when the circle's center is changed.
 | radius_changed  | None  | This event is fired when the circle's radius is changed.
 | visible_changed  | None  | This event is fired when the circle's visible is changed.

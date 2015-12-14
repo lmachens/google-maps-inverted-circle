@@ -1,5 +1,4 @@
-function InitInvertedCircle() {
-
+InitInvertedCircle = function() {
   /*
   * https://github.com/lmachens/google-maps-inverted-circle
   * Copyright (c) 2013 Miah Raihan Mahmud Arman
@@ -268,21 +267,25 @@ function InitInvertedCircle() {
     * @private
     */
   InvertedCircle.prototype.addCenter_ = function() {
-    var center_icon = new google.maps.MarkerImage(this.get('center_icon'),
-      // second line defines the dimensions of the image
-      new google.maps.Size(20, 20),
-      // third line defines the origin of the custom icon
-      new google.maps.Point(0,0),
-      // and the last line defines the offset for the image
-      new google.maps.Point(10, 10)
-      );
-
     var center_marker = new google.maps.Marker({
       position: this.getCenter(),
-      title: 'Drag me!',
+      //title: 'Drag me!',
       raiseOnDrag: false,
-      icon: center_icon
+      zIndex: 999999
     });
+
+    var center_icon = this.get('center_icon');
+    if (center_icon) {
+      if (typeof center_icon === 'string') {
+        center_icon = {
+          url: this.get('center_icon'),
+          size: new google.maps.Size(29, 29),
+          origin: new google.maps.Point(0,0),
+          anchor: new google.maps.Point(15, 15)
+        }
+      }
+      center_marker.setIcon(center_icon);
+    }
 
     // Bind the marker map property to the InvertedCircle map property
     center_marker.bindTo('map', this);
@@ -305,30 +308,12 @@ function InitInvertedCircle() {
     * @private
     */
   InvertedCircle.prototype.addSizer_ = function() {
-    var sizer_icon_left_right = new google.maps.MarkerImage(this.get('resize_leftright'),
-      // second line defines the dimensions of the image
-      new google.maps.Size(29, 29),
-      // third line defines the origin of the custom icon
-      new google.maps.Point(0,0),
-      // and the last line defines the offset for the image
-      new google.maps.Point(15, 15)
-      );
-
-    var sizer_icon_up_down = new google.maps.MarkerImage(this.get('resize_updown'),
-      // second line defines the dimensions of the image
-      new google.maps.Size(29, 29),
-      // third line defines the origin of the custom icon
-      new google.maps.Point(0,0),
-      // and the last line defines the offset for the image
-      new google.maps.Point(15, 15)
-      );
-
     var left_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), -90);
     var sizer_left = new google.maps.Marker({
       position: left_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      icon: sizer_icon_left_right
+      zIndex: 999999
     });
 
     var right_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 90);
@@ -336,7 +321,7 @@ function InitInvertedCircle() {
       position: right_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      icon: sizer_icon_left_right
+      zIndex: 999999
     });
 
     var up_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 360);
@@ -344,8 +329,8 @@ function InitInvertedCircle() {
       position: up_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      icon: sizer_icon_up_down,
-      visible: false
+      visible: false,
+      zIndex: 999999
     });
 
     var down_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 180);
@@ -353,8 +338,8 @@ function InitInvertedCircle() {
       position: down_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      icon: sizer_icon_up_down,
-      visible: false
+      visible: false,
+      zIndex: 999999
     });
 
     sizer_left.bindTo('map', this, 'map');
@@ -374,37 +359,52 @@ function InitInvertedCircle() {
     this.set('sizer_down', sizer_down);
 
     var me = this;
+    var resize_leftright = this.get('resize_leftright');
+    if (resize_leftright) {
+      if (typeof resize_leftright === 'string') {
+        var sizer_icon_left_right = {
+          url: this.get('resize_leftright'),
+          size: new google.maps.Size(29, 29),
+          origin: new google.maps.Point(0,0),
+          anchor: new google.maps.Point(15, 15)
+        }
+      } else {
+        var sizer_icon_left_right = resize_leftright
+      }
+
+      sizer_left.setIcon(sizer_icon_left_right);
+      google.maps.event.addListener(sizer_left, 'mouseover', function() {
+        var icon = me.get('sizer_left').getIcon();
+        icon.origin = new google.maps.Point(0,29);
+        me.get('sizer_left').setIcon(icon);
+      });
+
+      google.maps.event.addListener(sizer_left, 'mouseout', function() {
+        var icon = me.get('sizer_left').getIcon();
+        icon.origin = new google.maps.Point(0,0);
+        me.get('sizer_left').setIcon(icon);
+      });
+
+      sizer_right.setIcon(sizer_icon_left_right);
+      google.maps.event.addListener(sizer_right, 'mouseover', function() {
+        var icon = me.get('sizer_right').getIcon();
+        icon.origin = new google.maps.Point(0,29);
+        me.get('sizer_right').setIcon(icon);
+      });
+
+      google.maps.event.addListener(sizer_right, 'mouseout', function() {
+        var icon = me.get('sizer_right').getIcon();
+        icon.origin = new google.maps.Point(0,0);
+        me.get('sizer_right').setIcon(icon);
+      });
+    }
 
     google.maps.event.addListener(sizer_left, 'dragstart', function() {
       me.setOldRadius(me.getRadius());
     });
 
-    google.maps.event.addListener(sizer_left, 'mouseover', function() {
-      var icon = me.get('sizer_left').getIcon();
-      icon.origin = new google.maps.Point(0,29);
-      me.get('sizer_left').setIcon(icon);
-    });
-
-    google.maps.event.addListener(sizer_left, 'mouseout', function() {
-      var icon = me.get('sizer_left').getIcon();
-      icon.origin = new google.maps.Point(0,0);
-      me.get('sizer_left').setIcon(icon);
-    });
-
     google.maps.event.addListener(sizer_right, 'dragstart', function() {
       me.setOldRadius(me.getRadius());
-    });
-
-    google.maps.event.addListener(sizer_right, 'mouseover', function() {
-      var icon = me.get('sizer_right').getIcon();
-      icon.origin = new google.maps.Point(0,29);
-      me.get('sizer_right').setIcon(icon);
-    });
-
-    google.maps.event.addListener(sizer_right, 'mouseout', function() {
-      var icon = me.get('sizer_right').getIcon();
-      icon.origin = new google.maps.Point(0,0);
-      me.get('sizer_right').setIcon(icon);
     });
 
     google.maps.event.addListener(sizer_left, 'drag', function() {

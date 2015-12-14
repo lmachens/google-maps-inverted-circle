@@ -14,4 +14,5 @@ Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use('ecmascript');
   api.addFiles('google-maps-inverted-circle.js');
+  api.export('InitInvertedCircle');
 });
