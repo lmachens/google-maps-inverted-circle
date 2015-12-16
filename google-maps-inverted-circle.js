@@ -273,7 +273,7 @@ InitInvertedCircle = function() {
       position: this.getCenter(),
       //title: 'Drag me!',
       raiseOnDrag: false,
-      zIndex: 999999
+      zIndex: 9999999
     });
 
     var center_icon = this.get('center_icon');
@@ -287,6 +287,16 @@ InitInvertedCircle = function() {
         }
       }
       center_marker.setIcon(center_icon);
+      google.maps.event.addListener(center_marker, 'mouseover', function() {
+        var icon = center_marker.getIcon();
+        icon.origin = new google.maps.Point(0, icon.size.height);
+        center_marker.setIcon(icon);
+      });
+      google.maps.event.addListener(center_marker, 'mouseout', function() {
+        var icon = center_marker.getIcon();
+        icon.origin = new google.maps.Point(0,0);
+        center_marker.setIcon(icon);
+      });
     }
 
     // Bind the marker map property to the InvertedCircle map property
@@ -315,7 +325,7 @@ InitInvertedCircle = function() {
       position: left_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      zIndex: 999999
+      zIndex: 9999999
     });
 
     var right_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 90);
@@ -323,7 +333,7 @@ InitInvertedCircle = function() {
       position: right_endpoint,
       //title: 'Drag me!',
       raiseOnDrag: false,
-      zIndex: 999999
+      zIndex: 9999999
     });
 
     var up_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 360);
@@ -332,7 +342,7 @@ InitInvertedCircle = function() {
       //title: 'Drag me!',
       raiseOnDrag: false,
       visible: false,
-      zIndex: 999999
+      zIndex: 9999999
     });
 
     var down_endpoint = google.maps.geometry.spherical.computeOffset(this.getCenter(), this.getRadius(), 180);
@@ -341,7 +351,7 @@ InitInvertedCircle = function() {
       //title: 'Drag me!',
       raiseOnDrag: false,
       visible: false,
-      zIndex: 999999
+      zIndex: 9999999
     });
 
     sizer_left.bindTo('map', this, 'map');
@@ -377,20 +387,20 @@ InitInvertedCircle = function() {
       sizer_left.setIcon(sizer_icon_left_right);
       google.maps.event.addListener(sizer_left, 'mouseover', function() {
         var icon = me.get('sizer_left').getIcon();
-        icon.origin = new google.maps.Point(0,29);
+        icon.origin = new google.maps.Point(0, icon.size.height);
         me.get('sizer_left').setIcon(icon);
       });
 
       google.maps.event.addListener(sizer_left, 'mouseout', function() {
         var icon = me.get('sizer_left').getIcon();
-        icon.origin = new google.maps.Point(0,0);
+        icon.origin = new google.maps.Point(0, 0);
         me.get('sizer_left').setIcon(icon);
       });
 
       sizer_right.setIcon(sizer_icon_left_right);
       google.maps.event.addListener(sizer_right, 'mouseover', function() {
         var icon = me.get('sizer_right').getIcon();
-        icon.origin = new google.maps.Point(0,29);
+        icon.origin = new google.maps.Point(0, icon.size.height);
         me.get('sizer_right').setIcon(icon);
       });
 

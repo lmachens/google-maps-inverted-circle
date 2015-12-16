@@ -28,12 +28,22 @@
           //always_fit_to_map: false,
           //resize_updown: 'resize_updown.png',
           resize_leftright: 'resize_leftright.png',
-          //center_icon: 'center.png',
+          center_icon: {
+            url: 'center.png',
+            size: new google.maps.Size(27, 27),
+            origin: new google.maps.Point(0,0),
+            anchor: new google.maps.Point(15, 15)
+          },
+          /*center_icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            strokeColor: '#4E87B6',
+            scale: 5
+          },*/
           position_changed_event: function(position) {
-            console.log(position);
+            //console.log(position);
           },
           radius_changed_event: function(radius) {
-            console.log(radius);
+            //console.log(radius);
           }
         });
         map.fitBounds(iCircle.getBounds());
