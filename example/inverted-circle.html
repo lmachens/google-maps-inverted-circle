@@ -18,6 +18,7 @@
         InitInvertedCircle();
         iCircle = new InvertedCircle({
           center: map.getCenter(),
+          visible: true,
           map: map,
           radius: 5000, // 5 km
           editable: true,
@@ -35,6 +36,7 @@
             console.log(radius);
           }
         });
+        map.fitBounds(iCircle.getBounds());
         //iCircle.setVisible(false);
       }
       // Load the map

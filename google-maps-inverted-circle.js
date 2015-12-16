@@ -26,6 +26,8 @@ InitInvertedCircle = function() {
     }
     options = this.extend_(options, opts);
     this.set('visible', options.visible);
+    if (!options.visible)
+      options.editable = false;
     this.set('map', options.map);
     this.set('center', options.center);
     this.set('radius', options.radius);
@@ -235,8 +237,8 @@ InitInvertedCircle = function() {
     }
 
     if(old_radius == radius){
-      console.log('old_radius == radius');
-    // bound_radius = radius;
+      //console.log('old_radius == radius');
+      bound_radius = radius;
       left_bound = google.maps.geometry.spherical.computeOffset(center, bound_radius, -90);
       right_bound = google.maps.geometry.spherical.computeOffset(center, bound_radius, 90);
       up_bound = google.maps.geometry.spherical.computeOffset(center, bound_radius, 360);
