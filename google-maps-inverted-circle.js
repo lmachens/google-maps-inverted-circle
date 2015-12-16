@@ -112,7 +112,7 @@ InitInvertedCircle = function() {
   InvertedCircle.prototype.visible_changed = function()
   {
     this.setEditable(this.getVisible());
-    this.setDraggable(this.getVisible());
+    //this.setDraggable(this.getVisible());
     if(this.getVisible()){
       if(this.get('donut'))
         this.get('donut').setPaths(this.get('paths'));
