@@ -113,15 +113,18 @@ InitInvertedCircle = function() {
 
   InvertedCircle.prototype.visible_changed = function()
   {
-    this.setEditable(this.getVisible());
+    var visible = this.getVisible();
+    this.setEditable(visible);
     //this.setDraggable(this.getVisible());
-    if(this.getVisible()){
+    if(visible){
       if(this.get('donut'))
         this.get('donut').setPaths(this.get('paths'));
-    }else{
+    } else{
       if(this.get('donut'))
         this.get('donut').setPaths([]);
     }
+    if (this.get('center_marker'))
+      this.get('center_marker').setVisible(visible);
   }
 
   InvertedCircle.prototype.setMap = function(map)
@@ -273,7 +276,8 @@ InitInvertedCircle = function() {
       position: this.getCenter(),
       //title: 'Drag me!',
       raiseOnDrag: false,
-      zIndex: 9999999
+      zIndex: 9999999,
+      visible: this.get('visible')
     });
 
     var center_icon = this.get('center_icon');
