@@ -22,7 +22,8 @@ InitInvertedCircle = function() {
       always_fit_to_map: false,
       radius_style: "background: #fff; border: 1px solid black; position: absolute;",
       position_changed_event: function() {},
-      radius_changed_event: function() {}
+      radius_changed_event: function() {},
+      center_clicked_event: function() {}
     }
     options = this.extend_(options, opts);
     this.set('visible', options.visible);
@@ -45,6 +46,7 @@ InitInvertedCircle = function() {
     this.set('center_icon', options.center_icon);
     this.set('position_changed_event', options.position_changed_event);
     this.set('radius_changed_event', options.radius_changed_event);
+    this.set('center_clicked_event', options.center_clicked_event);
 
     // Add the center marker
     this.addCenter_();
@@ -56,7 +58,17 @@ InitInvertedCircle = function() {
     this.addSizer_();
 
     // Add a text overlay for the radius
-    this.radiusOverlay = new TextOverlay("radiusOverlay", this.get('map'), options.radius_style);
+    this.radiusOverlay = new google.maps.InfoWindow();
+    this.addressOverlay = new google.maps.InfoWindow();
+    // force address window always on top
+    google.maps.event.addListener(this.addressOverlay, 'domready', function() {
+        this.setZIndex(google.maps.Marker.MAX_ZINDEX);
+    });
+    this.geocoder = new google.maps.Geocoder();
+    // hide x-button in infoWindow (not the best solution..)
+    /*google.maps.event.addListener(this.radiusOverlay, 'domready', function() {
+      $(".gm-style-iw").next("div").hide();
+    });*/
   //this.addVisibleController_();
   }
 
@@ -272,12 +284,45 @@ InitInvertedCircle = function() {
     * @private
     */
   InvertedCircle.prototype.addCenter_ = function() {
+    var me = this;
     var center_marker = new google.maps.Marker({
       position: this.getCenter(),
       //title: 'Drag me!',
       raiseOnDrag: false,
       zIndex: 9999999,
-      visible: this.get('visible')
+      visible: this.get('visible'),
+    });
+    var position = center_marker.getPosition();
+    this.pairedCoordinates = position.lat() * 1e7 << 16 & 0xffff0000 | position.lng() * 1e7 & 0x0000ffff;
+
+    center_marker.addListener('click', function() {
+      me.addressOverlay.setContent(
+        '<form id="addressForm" style="width: 230px">' +
+        '<div class="input-group">' +
+        '<input class="form-control" placeholder="Enter address">' +
+        '<span class="input-group-btn" id="submitAddress">' +
+        '<button type="submit" class="btn btn-secondary" type="button"><i class="fa fa-search"></i></button>' +
+        '</span>' +
+        '</div>' +
+        '</form>'
+      );
+      me.addressOverlay.open(me.get('map'), center_marker);
+      $('#addressForm input').geocomplete().bind(
+        'geocode:result',
+        function (e, result) {
+          me.setCenter(result.geometry.location);
+          me.get('map').setCenter(result.geometry.location);
+          me.addressOverlay.close();
+        }
+      );
+      $('#addressForm button[type=submit]').click(function() {
+        $('#addressForm input').trigger("geocode");
+      });
+      $('#addressForm input').focus();
+    });
+
+    this.get('map').addListener('click', function() {
+       me.addressOverlay.close();
     });
 
     var center_icon = this.get('center_icon');
@@ -312,9 +357,10 @@ InitInvertedCircle = function() {
     this.set('center_marker', center_marker);
 
     var me = this;
-
     google.maps.event.addListener(center_marker, 'drag', function() {
-      me.setCenter(me.get('center_marker').getPosition());
+      var position = center_marker.getPosition();
+      me.setCenter(position);
+      me.pairedCoordinates = position.lat() * 1e7 << 16 & 0xffff0000 | position.lng() * 1e7 & 0x0000ffff;
     });
   }
 
@@ -390,54 +436,76 @@ InitInvertedCircle = function() {
 
       sizer_left.setIcon(sizer_icon_left_right);
       google.maps.event.addListener(sizer_left, 'mouseover', function() {
-        var icon = me.get('sizer_left').getIcon();
+        var icon = sizer_left.getIcon();
         icon.origin = new google.maps.Point(0, icon.size.height);
-        me.get('sizer_left').setIcon(icon);
+        sizer_left.setIcon(icon);
+        me.radiusOverlay.open(me.get('map'), sizer_left);
+        me.showRadius_(sizer_left);
       });
 
       google.maps.event.addListener(sizer_left, 'mouseout', function() {
-        var icon = me.get('sizer_left').getIcon();
+        if (me.dragStarted) {
+          return;
+        }
+        var icon = sizer_left.getIcon();
         icon.origin = new google.maps.Point(0, 0);
-        me.get('sizer_left').setIcon(icon);
+        sizer_left.setIcon(icon);
+        me.radiusOverlay.close();
       });
 
       sizer_right.setIcon(sizer_icon_left_right);
       google.maps.event.addListener(sizer_right, 'mouseover', function() {
-        var icon = me.get('sizer_right').getIcon();
+        var icon = sizer_right.getIcon();
         icon.origin = new google.maps.Point(0, icon.size.height);
-        me.get('sizer_right').setIcon(icon);
+        sizer_right.setIcon(icon);
+        me.radiusOverlay.open(this.get('map'), sizer_right);
+        me.showRadius_(sizer_right);
       });
 
       google.maps.event.addListener(sizer_right, 'mouseout', function() {
-        var icon = me.get('sizer_right').getIcon();
+        if (me.dragStarted) {
+          return;
+        }
+        var icon = sizer_right.getIcon();
         icon.origin = new google.maps.Point(0,0);
-        me.get('sizer_right').setIcon(icon);
+        sizer_right.setIcon(icon);
+        me.radiusOverlay.close();
       });
     }
 
     google.maps.event.addListener(sizer_left, 'dragstart', function() {
       me.setOldRadius(me.getRadius());
+      me.dragStarted = true;
+
     });
 
     google.maps.event.addListener(sizer_right, 'dragstart', function() {
       me.setOldRadius(me.getRadius());
+      me.dragStarted = true;
+
     });
 
     google.maps.event.addListener(sizer_left, 'drag', function() {
-      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), me.get('sizer_left').getPosition());
+      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), sizer_left.getPosition());
+      if (radius < 1000) {
+        radius = 1000;
+      }
       me.setRadius(radius);
-      me.showRadius_(me.get('sizer_left').getPosition());
+      me.showRadius_(sizer_left);
     });
 
     google.maps.event.addListener(sizer_right, 'drag', function() {
-      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), me.get('sizer_right').getPosition());
+      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), sizer_right.getPosition());
+      if (radius < 1000) {
+        radius = 1000;
+      }
       me.setRadius(radius);
-      me.showRadius_(me.get('sizer_right').getPosition());
+      me.showRadius_(sizer_right);
     });
 
     google.maps.event.addListener(sizer_left, 'dragend', function() {
-      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), me.get('sizer_right').getPosition());
-      me.radiusOverlay.hide();
+      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), sizer_left.getPosition());
+      me.radiusOverlay.close();
       me.setRadius(radius);
       /*var old_radius = me.getOldRadius();
         var radius = me.getRadius();
@@ -446,11 +514,13 @@ InitInvertedCircle = function() {
       if(me.get('always_fit_to_map')){
         me.get('map').fitBounds(me.getBounds());
       }
+      me.dragStarted = false;
+      google.maps.event.trigger(sizer_left, 'mouseout');
     });
 
     google.maps.event.addListener(sizer_right, 'dragend', function() {
-      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), me.get('sizer_right').getPosition());
-      me.radiusOverlay.hide();
+      var radius = google.maps.geometry.spherical.computeDistanceBetween(me.getCenter(), sizer_right.getPosition());
+      me.radiusOverlay.close();
       me.setRadius(radius);
       /*var old_radius = me.getOldRadius();
         var radius = me.getRadius();
@@ -459,12 +529,14 @@ InitInvertedCircle = function() {
       if(me.get('always_fit_to_map')){
         me.get('map').fitBounds(me.getBounds());
       }
+      me.dragStarted = false;
+      google.maps.event.trigger(sizer_right, 'mouseout');
     });
   };
 
-  InvertedCircle.prototype.showRadius_ = function(position) {
+  InvertedCircle.prototype.showRadius_ = function(marker) {
     var contentString = parseFloat(Math.round(this.getRadius()) / 1000).toFixed(2) + ' km';
-    this.radiusOverlay.setText(contentString, position);
+    this.radiusOverlay.setContent(contentString);
   }
 
   /**
@@ -643,110 +715,11 @@ InitInvertedCircle = function() {
     this.set('donut', donut);
     if(this.getVisible())
       this.get('donut').setPaths(paths);
+    var me = this;
+    this.get('donut').addListener('click', function() {
+       me.addressOverlay.close();
+    });
   }
 
-  // Text overlay
-  function TextOverlay(cls, map, style) {
-    // Now initialize all properties.
-    this.pos_ = null;
-    this.txt_ = null;
-    this.cls_ = cls;
-    this.map_ = map;
-    this.style_ = style;
-
-    // We define a property to hold the image's
-    // div. We'll actually create this div
-    // upon receipt of the add() method so we'll
-    // leave it null for now.
-    this.div_ = null;
-    // Explicitly call setMap() on this overlay
-    this.setMap(map);
-  }
-
-  TextOverlay.prototype = new google.maps.OverlayView();
-
-  TextOverlay.prototype.onAdd = function() {
-
-    // Note: an overlay's receipt of onAdd() indicates that
-    // the map's panes are now available for attaching
-    // the overlay to the map via the DOM.
-
-    // Create the DIV and set some basic attributes.
-    var div = document.createElement('DIV');
-    div.className = this.cls_;
-    div.style.cssText = this.style_;
-
-    this.div_ = div;
-    // We add an overlay to a map via one of the map's panes.
-
-    var panes = this.getPanes();
-    panes.floatPane.appendChild(div);
-  }
-
-  TextOverlay.prototype.setText = function(txt, pos) {
-    this.pos = pos;
-    this.txt_ = txt;
-    // Set the overlay's div_ property to this DIV
-    var div = this.div_;
-    div.innerHTML = this.txt_;
-    var overlayProjection = this.getProjection();
-    var position = overlayProjection.fromLatLngToDivPixel(this.pos);
-
-    div.style.left = position.x - 20 + 'px';
-    div.style.top = position.y - 30 + 'px';
-    this.show();
-  }
-
-  TextOverlay.prototype.draw = function() {
-      if (!this.pos)
-        return;
-
-      var overlayProjection = this.getProjection();
-
-      // Retrieve the southwest and northeast coordinates of this overlay
-      // in latlngs and convert them to pixels coordinates.
-      // We'll use these coordinates to resize the DIV.
-      var position = overlayProjection.fromLatLngToDivPixel(this.pos);
-
-      var div = this.div_;
-      div.style.left = position.x + 'px';
-      div.style.top = position.y + 'px';
-  }
-
-  //Optional: helper methods for removing and toggling the text overlay.
-  TextOverlay.prototype.onRemove = function() {
-    this.div_.parentNode.removeChild(this.div_);
-    this.div_ = null;
-  }
-
-  TextOverlay.prototype.hide = function() {
-    if (this.div_) {
-      this.div_.style.visibility = "hidden";
-    }
-  }
-
-  TextOverlay.prototype.show = function() {
-    if (this.div_) {
-      this.div_.style.visibility = "visible";
-    }
-  }
-
-  TextOverlay.prototype.toggle = function() {
-    if (this.div_) {
-      if (this.div_.style.visibility == "hidden") {
-        this.show();
-      } else {
-        this.hide();
-      }
-    }
-  }
-
-  TextOverlay.prototype.toggleDOM = function() {
-    if (this.getMap()) {
-      this.setMap(null);
-    } else {
-      this.setMap(this.map_);
-    }
-  }
   window.InvertedCircle = InvertedCircle;
 }
